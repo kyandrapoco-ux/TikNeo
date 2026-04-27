@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TikNeo | Download Video TikTok</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tkblack: '#121212',
+                        tkdark: '#1E1E1E',
+                        tkgray: '#2A2A2A',
+                        tkmusic: '#FF0050',
+                        tklight: '#00F2EA',
+                        ai: '#A855F7',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .glass {
+                background: rgba(30, 30, 30, 0.75);
+                backdrop-filter: blur(20px);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            .text-gradient {
+                background: linear-gradient(90deg, #FF0050 0%, #00F2EA 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+            .ai-gradient {
+                background: linear-gradient(135deg, #7928CA 0%, #FF0080 100%);
+            }
+            .btn-gradient {
+                background: linear-gradient(90deg, #FF0050 0%, #FF80B0 100%);
+                transition: all 0.3s ease;
+            }
+            .btn-gradient:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px rgba(255, 0, 80, 0.3);
+            }
+            .input-focus:focus {
+                border-color: #FF0050;
+                box-shadow: 0 0 0 3px rgba(255, 0, 80, 0.2);
+            }
+            .float-btn {
+                transition: all 0.2s ease;
+                cursor: pointer;
+            }
+            .float-btn:hover {
+                transform: scale(1.03);
+                box-shadow: 0 0 25px currentColor;
+            }
+            .modal-appear {
+                animation: modalPop 0.4s ease-out;
+            }
+            @keyframes modalPop {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .tag {
+                display: inline-block;
+                background: rgba(255,255,255,0.1);
+                padding: 4px 10px;
+                border-radius: 15px;
+                margin: 3px;
+                font-size: 12px;
+                color: #ddd;
+            }
+        }
+    </style>
+</head>
+<body class="bg-tkblack text-white font-sans min-h-screen flex flex-col relative overflow-x-hidden">
+
+    <!-- BACKGROUND BLUR -->
+    <div id="bgBlur" class="fixed inset-0 z-0 opacity-0 transition-opacity duration-700">
+        <img id="bgImage" src="" alt="" class="w-full h-full object-cover scale-110">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-xl"></div>
+    </div>
+
+    <!-- Navbar -->
+    <nav class="w-full py-6 px-4 relative z-10">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fa fa-music text-tkmusic text-2xl"></i>
+                <h1 class="text-2xl font-bold">Tik<span class="text-gradient">Neo</span></h1>
+            </div>
+            
+            <!-- ============================================== -->
+            <!--          COUNTER USER        -->
+            <!-- ============================================== -->
+            <div class="flex items-center gap-2 bg-tkdark border border-gray-800 px-4 py-2 rounded-full">
+                <i class="fa fa-users text-tkmusic"></i>
+                <span id="visitorCount" class="font-bold text-sm">Loading...</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex items-center justify-center px-4 py-10 relative z-10">
+        <div class="max-w-4xl w-full">
+            
+            <!-- Header Text -->
+            <div class="text-center mb-8">
+                <h2 class="text-[clamp(1.8rem,5vw,3rem)] font-bold leading-tight">
+                    Download Video <span class="text-gradient">TikTok</span>
+                </h2>
+                <p class="text-gray-400 mt-4">Fast, Free, No Ads, Unlimited</p>
+            </div>
+
+            <!-- Download Box -->
+            <div class="glass rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+                <form id="downloadForm" class="space-y-4 relative z-10">
+                    <div class="relative">
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xl">
+                            <i class="fa fa-link"></i>
+                        </div>
+                        <input 
+                            type="url" 
+                            id="urlInput"
+                            placeholder="Paste link here..." 
+                            class="w-full bg-tkgray border border-gray-700 rounded-2xl py-5 px-14 text-white outline-none transition-all input-focus placeholder:text-gray-500"
+                        >
+                        <button type="button" id="pasteBtn" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
+                            <i class="fa fa-clipboard text-lg"></i>
+                        </button>
+                    </div>
+                    <button type="submit" class="w-full btn-gradient text-white font-bold py-4 rounded-2xl text-lg">
+                        <i class="fa fa-download mr-2"></i> DOWNLOAD NOW
+                    </button>
+                </form>
+                <p id="statusText" class="text-center text-sm mt-2 text-green-400 hidden">✅ Link detected, Loading data...</p>
+            </div>
+
+            <!-- ============================================== -->
+            <!--    AREA DATA VIDEO (MUNCUL TEPAT DI BAWAH)   -->
+            <!-- ============================================== -->
+            <div id="resultArea" class="hidden glass rounded-3xl overflow-hidden shadow-2xl border border-white/10 modal-appear mt-4">
+                
+                <!-- HEADER: PROFIL -->
+                <div class="p-6 border-b border-white/10 flex items-center gap-4">
+                    <img id="authorAvatar" src="" alt="Profile" class="w-16 h-16 rounded-full object-cover border-2 border-tkmusic">
+                    <div>
+                        <h3 id="authorName" class="font-bold text-xl"></h3>
+                        <p id="authorUsername" class="text-gray-400 text-sm"></p>
+                    </div>
+                </div>
+
+                <!-- BODY: CAPTION & HASHTAGS -->
+                <div class="p-6">
+                    <p id="captionText" class="text-gray-200 leading-relaxed mb-4"></p>
+                    <div id="hashtagsContainer" class="flex flex-wrap"></div>
+                </div>
+            </div>
+            <!-- Features Section -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+                <div class="bg-tkdark rounded-2xl p-6 text-center border border-gray-800 hover:border-tkmusic/50 transition-all">
+                    <i class="fa fa-bolt text-3xl text-tkmusic mb-4"></i>
+                    <h3 class="font-bold text-lg mb-2">Fast Process</h3>
+                    <p class="text-sm text-gray-400">Fast and Stable</p>
+                </div>
+                <div class="bg-tkdark rounded-2xl p-6 text-center border border-gray-800 hover:border-green-500/50 transition-all">
+                    <div class="relative inline-block mb-4">
+                        <div class="border-2 border-green-400 text-green-400 px-2 rounded text-xl font-bold relative">
+                            ADS
+                            <div class="absolute top-1/2 left-0 right-0 h-[2px] bg-red-500 -rotate-12"></div>
+                        </div>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">No Ads</h3>
+                    <p class="text-sm text-gray-400">Free Without Ads</p>
+                </div>
+                <div class="bg-tkdark rounded-2xl p-6 text-center border border-gray-800 hover:border-tkmusic/50 transition-all">
+                    <i class="fa fa-shield text-3xl text-tkmusic mb-4"></i>
+                    <h3 class="font-bold text-lg mb-2">Safe & Secure</h3>
+                    <p class="text-sm text-gray-400">Protected System</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="py-8 text-center text-gray-500 text-sm border-t border-gray-900 relative z-10">
+        <p>&copy; 2025 TikNeo - Powered by TIKWM API</p>
+    </footer>
+
+    <!-- ============================================== -->
+    <!--          FIXED SOCIAL & CONTACT BUTTONS       -->
+    <!-- ============================================== -->
+    <div class="fixed bottom-6 right-6 flex flex-col gap-4 z-[999]">
+        
+        <!-- TikTok Button -->
+        <a href="https://tiktok.com/@kyndrarsky_" target="_blank"
+           class="w-14 h-14 bg-tkdark border-2 border-gray-800 hover:border-tkmusic rounded-full flex items-center justify-center text-2xl text-tkmusic transition-all hover:scale-110 hover:shadow-lg hover:shadow-tkmusic/30">
+            <i class="fa fa-music"></i>
+        </a>
+
+        <!-- Email Button -->
+        <a href="mailto:kyandrapoco@gmail.com"
+           class="w-14 h-14 bg-tkdark border-2 border-gray-800 hover:border-green-500 rounded-full flex items-center justify-center text-2xl text-green-500 transition-all hover:scale-110 hover:shadow-lg hover:shadow-green-500/30">
+            <i class="fa fa-envelope"></i>
+        </a>
+
+    </div>
+
+    <!-- ============================================== -->
+    <!--          MODAL PILIHAN FORMAT DOWNLOAD        -->
+    <!-- ============================================== -->
+    <div id="downloadModal" class="fixed inset-0 z-50 hidden flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" id="modalOverlay"></div>
+        <div class="relative glass rounded-3xl p-6 w-full max-w-md modal-appear">
+            <h3 class="text-center font-bold text-2xl mb-6 text-gradient">Select Download Format</h3>
+            
+            <div class="grid grid-cols-1 gap-4">
+                
+                <!-- MP3 -->
+                <div id="dlMp3" class="float-btn flex items-center justify-between bg-tkgray hover:bg-gray-700 p-4 rounded-2xl text-green-400 border-2 border-transparent hover:border-green-400">
+                    <div class="flex items-center gap-4">
+                        <i class="fa fa-music text-3xl"></i>
+                        <div>
+                            <span class="font-bold text-lg">MP3 Audio</span>
+                            <p class="text-xs opacity-70">Just extract sound</p>
+                        </div>
+                    </div>
+                    <i class="fa fa-arrow-right text-xl"></i>
+                </div>
+
+                <!-- ULTRA HD -->
+                <div id="dlAi" class="float-btn flex items-center justify-between bg-tkgray hover:bg-gray-700 p-4 rounded-2xl text-ai border-2 border-transparent hover:border-ai relative">
+                    <div class="absolute top-0 right-0 ai-gradient text-[10px] px-2 py-1 rounded-bl-lg font-bold">BEST</div>
+                    <div class="flex items-center gap-4">
+                        <i class="fa fa-film text-3xl"></i>
+                        <div>
+                            <span class="font-bold text-lg">ULTRA HD</span>
+                            <p class="text-xs opacity-70">Best Quality</p>
+                        </div>
+                    </div>
+                    <i class="fa fa-arrow-right text-xl"></i>
+                </div>
+
+                <!-- NO WATERMARK -->
+                <div id="dlNoWm" class="float-btn flex items-center justify-between bg-tkgray hover:bg-gray-700 p-4 rounded-2xl text-tkmusic border-2 border-transparent hover:border-tkmusic">
+                    <div class="flex items-center gap-4">
+                        <i class="fa fa-video-camera text-3xl"></i>
+                        <div>
+                            <span class="font-bold text-lg">STANDARD</span>
+                            <p class="text-xs opacity-70">No Watermark</p>
+                        </div>
+                    </div>
+                    <i class="fa fa-arrow-right text-xl"></i>
+                </div>
+            </div>
+            
+            <button id="closeModal" class="w-full mt-6 py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold transition-all">
+                <i class="fa fa-times mr-2"></i> CLOSE
+            </button>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!--                  AWAL SCRIPT                   -->
+    <!-- ============================================== -->
+    <script>
+        const form = document.getElementById('downloadForm');
+        const urlInput = document.getElementById('urlInput');
+        const pasteBtn = document.getElementById('pasteBtn');
+        const resultArea = document.getElementById('resultArea');
+        const statusText = document.getElementById('statusText');
+        const downloadModal = document.getElementById('downloadModal');
+
+        let linkMp3 = '', linkNoWm = '', linkHd = '';
+
+        // ==============================================
+        // VISITOR COUNTER
+        // ==============================================
+        const COUNTER_API = "https://api.counterapi.dev/v1";
+        const COUNTER_NAME = "tikneo_users"; // Nama unik buat web Bos
+
+async function updateCounter() {
+    try {
+        let url;
+
+        // Kalau belum pernah buka (first visit)
+        if (!localStorage.getItem("visited_tikneo")) {
+            url = `${COUNTER_API}/hit/${COUNTER_NAME}`; // tambah 1
+            localStorage.setItem("visited_tikneo", "yes");
+        } 
+        // Kalau sudah pernah buka
+        else {
+            url = `${COUNTER_API}/get/${COUNTER_NAME}`; // hanya ambil data (tidak nambah)
+        }
+
+        const res = await fetch(url);
+        const data = await res.json();
+
+        document.getElementById('visitorCount').innerText =
+            (data.value || data.total || 0).toLocaleString();
+
+    } catch(e) {
+        document.getElementById('visitorCount').innerText = "---";
+    }
+}
+
+        // AUTO DETECT LINK -> MUNCULIN DATA DOANG
+        urlInput.addEventListener('input', function() {
+            const url = this.value.trim();
+            if(url.includes('tiktok.com') || url.includes('vt.tiktok.com')) {
+                statusText.classList.remove('hidden');
+                statusText.innerText = "√ Link detected, Loading data...";
+                clearTimeout(this.timer);
+                this.timer = setTimeout(() => {
+                    fetchData(url, false); // false = cuma ambil data, gak buka modal
+                }, 600);
+            } else {
+                statusText.classList.add('hidden');
+            }
+        });
+
+        // Form Submit -> KLIK DOWNLOAD -> BUKA MODAL
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const url = urlInput.value.trim();
+            if(!url) return;
+            
+            // Ambil data dulu, terus buka modal
+            await fetchData(url, true); // true = setelah sukses, buka modal
+        });
+
+        // FUNGSI AMBIL DATA DARI API (VERSI FIXED DARI CHATGPT!)
+        async function fetchData(url, openModalAfter) {
+            const btn = form.querySelector('button[type="submit"]');
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> LOADING...';
+            btn.disabled = true;
+
+            try {
+                const apiUrl = `https://tikwm.com/api/?url=${encodeURIComponent(url)}&hd=1`;
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                if(data.code === 0) {
+                    
+                    // 1. SET LINK DOWNLOAD
+                    linkMp3 = data.data.music;
+                    linkNoWm = data.data.play;
+                    linkHd = data.data.hd || data.data.play;
+
+                    // 2. BACKGROUND BLUR
+                    if(data.data.cover) {
+                        document.getElementById('bgImage').src = data.data.cover;
+                        document.getElementById('bgBlur').style.opacity = "1";
+                    }
+
+                    // ==============================================
+                    // DATA AUTHOR
+                    // ==============================================
+                    const author = data.data.author || {};
+                    
+                    // ===== NAME =====
+                    let fullName = 
+                        author.nickname || 
+                        data.data.nickname || 
+                        author.unique_id || 
+                        data.data.unique_id || 
+                        "Unknown User";
+                    
+                    // ===== USERNAME =====
+                    let userName = 
+                        author.unique_id || 
+                        data.data.unique_id || 
+                        author.nickname || 
+                        "user";
+                    
+                    // ===== AVATAR =====
+                    document.getElementById('authorAvatar').src = 
+                        author.avatar || 
+                        data.data.avatar || 
+                        "";
+
+                    // SET KE UI
+                    document.getElementById('authorName').innerText = fullName;
+                    document.getElementById('authorUsername').innerText = "@" + userName;
+
+                    // ==============================================
+                    // CAPTION
+                    // ==============================================
+                    document.getElementById('captionText').innerText = 
+                        data.data.title || 
+                        data.data.desc || 
+                        data.data.description || 
+                        "No description available";
+
+                    // ==============================================
+                    // HASHTAG
+                    // ==============================================
+                    const tagsContainer = document.getElementById('hashtagsContainer');
+                    tagsContainer.innerHTML = '';
+                    
+                    let tags = data.data.tags;
+                    
+                    if (typeof tags === "string") {
+                        tags = tags.split(" ");
+                    }
+                    
+                    if (Array.isArray(tags)) {
+                        tags.forEach(tag => {
+                            const span = document.createElement('span');
+                            span.className = 'tag';
+                            span.innerText = '#' + tag;
+                            tagsContainer.appendChild(span);
+                        });
+                    }
+
+                    // 5. TAMPILKAN HASIL
+                    resultArea.classList.remove('hidden');
+
+                    statusText.classList.remove('hidden');
+                    statusText.innerText = "Data loaded successfully!";
+                    
+                    btn.innerHTML = '<i class="fa fa-check mr-2"></i> SUCCESS';
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = '<i class="fa fa-download mr-2"></i> DOWNLOAD NOW';
+                        btn.disabled = false;
+
+                        if(openModalAfter) {
+                            downloadModal.classList.remove('hidden');
+                        }
+                    }, 800);
+
+                } else {
+                    alert('FAILED! ' + (data.msg || 'Invalid link'));
+                    btn.innerHTML = '<i class="fa fa-download mr-2"></i> DOWNLOAD NOW';
+                    btn.disabled = false;
+                }
+
+            } catch (error) {
+                alert('Connection Error!');
+                btn.innerHTML = '<i class="fa fa-download mr-2"></i> DOWNLOAD NOW';
+                btn.disabled = false;
+            }
+        }
+        // ==============================================
+        // 🔥 FUNGSI DOWNLOAD FORCE
+        // ==============================================
+        function forceDownload(url, filename) {
+            if(!url) {
+                alert('Link not available!');
+                return;
+            }
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || 'download.mp4';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // EVENT KLIK TOMBOL DI DALAM MODAL
+        document.getElementById('dlMp3').addEventListener('click', () => {
+            forceDownload(linkMp3, 'audio_tiktok.mp3');
+        });
+
+        document.getElementById('dlNoWm').addEventListener('click', () => {
+            forceDownload(linkNoWm, 'video_tiktok_no_wm.mp4');
+        });
+
+        document.getElementById('dlAi').addEventListener('click', () => {
+            forceDownload(linkHd, 'video_tiktok_hd.mp4');
+        });
+
+        // TUTUP MODAL
+        document.getElementById('closeModal').addEventListener('click', () => {
+            downloadModal.classList.add('hidden');
+        });
+
+        document.getElementById('modalOverlay').addEventListener('click', () => {
+            downloadModal.classList.add('hidden');
+        });
+
+    </script>
+</body>
+</html>
