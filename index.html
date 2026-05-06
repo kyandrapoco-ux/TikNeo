@@ -402,7 +402,7 @@
             const url = this.value.trim();
             if(url.includes('tiktok.com') || url.includes('vt.tiktok.com')) {
                 statusText.classList.remove('hidden');
-                statusText.innerText = "✅ Link detected, Loading data...";
+                statusText.innerText = "√ Link detected, Loading data...";
                 clearTimeout(this.timer);
                 this.timer = setTimeout(() => {
                     fetchData(url, false);
@@ -492,7 +492,7 @@
                     // Tampilkan hasil
                     resultArea.classList.remove('hidden');
                     statusText.classList.remove('hidden');
-                    statusText.innerText = "✅ Data loaded successfully!";
+                    statusText.innerText = "√ Data loaded successfully!";
                     
                     btn.innerHTML = '<i class="fa fa-check mr-2"></i> SUCCESS';
                     
